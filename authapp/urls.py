@@ -1,7 +1,8 @@
 from django.urls import path
-from authapp.views import TestView
+import authapp.views as views
 
 
 urlpatterns = [
-    path('test/', TestView.as_view())
+    path('', views.UserApiView.as_view()),
+    path('<int:pk>', views.UserApiView.as_view()),
 ]
