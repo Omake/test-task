@@ -1,9 +1,9 @@
 from django.contrib.auth.models import User
 from django.shortcuts import get_object_or_404
 from rest_framework.authentication import TokenAuthentication
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from rest_framework.permissions import AllowAny
 from rest_framework import status
 
 from authapp.serializers import ReadOnlyUserSerializer, WriteOnlyUserSerializer
@@ -11,7 +11,7 @@ from authapp.serializers import ReadOnlyUserSerializer, WriteOnlyUserSerializer
 
 class UserApiView(APIView):
     authentication_classes = [TokenAuthentication]
-    permission_class = [AllowAny]
+    permission_classes = [IsAuthenticated]
 
     def get(self, request, pk=False):
         """Returns a list of users"""
@@ -21,11 +21,10 @@ class UserApiView(APIView):
 
             return Response(serializer.data, status=status.HTTP_200_OK)
 
-        else:
-            users = User.objects.all()
-            serializer = ReadOnlyUserSerializer(users, many=True)
+        users = User.objects.all()
+        serializer = ReadOnlyUserSerializer(users, many=True)
 
-            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
     def post(self, request):
         """Create user"""

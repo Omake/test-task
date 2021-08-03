@@ -1,11 +1,13 @@
 from django.contrib.auth.models import User
 from rest_framework.serializers import ModelSerializer, CharField, RegexField
 from rest_framework.validators import UniqueValidator
+from django.contrib.auth.hashers import make_password
 
 
 class AbstractUserSerializer(ModelSerializer):
     username = RegexField('^[\w.@+-]+$', max_length=150, min_length=1, allow_blank=False,
-                          validators=[UniqueValidator(queryset=User.objects.all())])
+                          validators=[UniqueValidator(queryset=User.objects.all(),
+                                                      message="Already taken.")])
     first_name = CharField(max_length=30)
     last_name = CharField(max_length=150)
 
@@ -25,3 +27,13 @@ class WriteOnlyUserSerializer(AbstractUserSerializer):
         model = User
         fields = ['username', 'first_name', 'last_name', 'password', 'is_active']
         read_only_fields = ['id', 'last_login', 'is_superuser']
+
+    def create(self, validated_data):
+        validated_data['password'] = make_password(validated_data.get('password'))
+
+        return super(WriteOnlyUserSerializer, self).create(validated_data)
+
+    def update(self, instance, validated_data):
+        validated_data['password'] = make_password(validated_data.get('password'))
+
+        return super(WriteOnlyUserSerializer, self).update(instance, validated_data)
